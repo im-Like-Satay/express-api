@@ -1,49 +1,61 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const app = express()
-const port = 3000
-const db = require('./conection')
-const response = require('./response')
+const express = require("express");
+const bodyParser = require("body-parser");
+const app = express();
+const port = 3000;
+const db = require("./conection");
+const response = require("./response");
+const e = require("express");
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 // END POINT
-app.get('/', (req, res) => {
-    const sql = "SELECT * FROM siswa"
-    
-    db.query(sql, (error, result) => {
-        if (error) return response(500, null, "server error :(", res)
-        return response(200, result, "get data success :)", res)
-    })
-})
+app.get("/", (req, res) => {
+  const sql = "SELECT * FROM siswa";
 
-app.get('/search', (req, res) => {
-    const sql = `SELECT * FROM siswa WHERE nis = ${req.query.nis}`
-    const nis = req.query.nis
-    // if (!nis) response(400, null, "nis harus diisi :(", res)
-    
-    db.query(sql, (error, result) => {
-        if (error) response(404, "user tidak ditemukan :(", "not found", res)
-        response(200, result, "find data success :)", res)
-    })
-})
+  db.query(sql, (error, result) => {
+    if (error) return response(500, null, "server error :(", res);
+    return response(200, result, "get data success :)", res);
+  });
+});
 
-app.post('/siswa', (req, res) => {
-    const { nis, namaLengkap, kelas, alamat } = req.body
-    const sql = `INSERT INTO siswa (nis, nama_lengkap, kelas, alamat) VALUES (${nis}, '${namaLengkap}', '${kelas}', '${alamat}')`
+app.get("/siswa", (req, res) => {
+  const nis = req.query.nis;
+  const sql = `SELECT * FROM siswa WHERE nis = ?`;
 
-    db.query(sql, (error, result) => {
-        if (error) response(403, "user tidak ditemukan, atau:(", "not found", res)
-        response(200, result, "update success, mantap jaya :)", res)
-    })
-})
+  if (!nis) return response(400, null, "nis harus diisi :(", res);
+  if (isNaN(nis)) return response(400, null, "nis harus berupa angka :(", res);
 
-app.delete("/delete", (req, res) => {
+  db.query(sql, [nis], (error, result) => {
+    if (error) response(500, null, "server error", res);
+    if (result.length === 0)
+      return response(404, null, "data tidak ditemukan :(", res);
+    return response(200, result, "find data success :)", res);
+  });
+});
 
-})
+app.post("/siswa", (req, res) => {
+  const { nis, namaLengkap, kelas, alamat, noTlp } = req.body;
+  const sql = `INSERT INTO siswa (nis, nama_lengkap, kelas, alamat, no_tlp) VALUES (${nis}, '${namaLengkap}', '${kelas}', '${alamat}', ${noTlp})`;
 
+  db.query(sql, (error, result) => {
+    if (error) return error; //response(403, null, "user sudah ada", res);
+    return response(200, result, "update success, mantap jaya :)", res);
+  });
+});
+
+app.delete("/siswa", (req, res) => {
+  const { nis, namaLengkap, kelas, alamat, noTlp } = req.body;
+  const sql = `DELETE INTO siswa (nis, nama_lengkap, kelas, alamat) VALUES (${nis}, '${namaLengkap}', '${kelas}', '${alamat}', ${noTlp})`;
+
+  db.query(sql, [nis], (error, result) => {
+    if (error) return response(500, null, "server error", res);
+    if (result.length === 0)
+      return response(404, null, "data tidak ditemukan :(", res);
+    return response(200, result, "delete success :)", res);
+  });
+});
 
 // PORT LISTENER
 app.listen(port, () => {
-    console.log(`http://localhost:${port}`)
-})
+  console.log(`http://localhost:${port}`);
+});
