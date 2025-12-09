@@ -35,23 +35,19 @@ app.get("/siswa", (req, res) => {
 
 app.post("/siswa", (req, res) => {
   const { nis, namaLengkap, kelas, alamat, noTlp } = req.body;
-  const sql = `INSERT INTO siswa (nis, nama_lengkap, kelas, alamat, no_tlp) VALUES (${nis}, '${namaLengkap}', '${kelas}', '${alamat}', ${noTlp})`;
+  const sql = `INSERT INTO siswa (nis, nama_lengkap, kelas, alamat, no_tlp) VALUES (?, ?, ?, ?, ?)`;
 
-  db.query(sql, (error, result) => {
-    if (error) return error; //response(403, null, "user sudah ada", res);
-    return response(200, result, "update success, mantap jaya :)", res);
+  db.query(sql, [nis, namaLengkap, kelas, alamat, noTlp], (error, result) => {
+    return response(200, result, "insert success, mantap jaya :)", res);
   });
 });
 
 app.delete("/siswa", (req, res) => {
   const { nis, namaLengkap, kelas, alamat, noTlp } = req.body;
-  const sql = `DELETE INTO siswa (nis, nama_lengkap, kelas, alamat) VALUES (${nis}, '${namaLengkap}', '${kelas}', '${alamat}', ${noTlp})`;
+  const sql = `DELETE FROM siswa WHERE nis = ?`;
 
-  db.query(sql, [nis], (error, result) => {
-    if (error) return response(500, null, "server error", res);
-    if (result.length === 0)
-      return response(404, null, "data tidak ditemukan :(", res);
-    return response(200, result, "delete success :)", res);
+  db.query(sql, [nis, namaLengkap, kelas, alamat, noTlp], (error, result) => {
+    return response(200, result, "delete success, mantap jaya :)", res);
   });
 });
 
